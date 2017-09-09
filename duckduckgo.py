@@ -17,7 +17,7 @@ async def query(query, useragent='python-duckduckgo ' + str(__version__),
     """
     Query DuckDuckGo, returning a Results object.
 
-    The API is queried asynchronously.
+    The API is queried asynchronously, and redirects are followed.
 
     Keyword arguments:
     useragent: UserAgent to use while querying. Default: "python-duckduckgo %d" (str)
@@ -34,7 +34,7 @@ async def query(query, useragent='python-duckduckgo ' + str(__version__),
         'q': query,
         'o': 'json',
         'kp': safesearch,
-        'no_redirect': '1',
+        'no_redirect': '0',
         'no_html': html,
         'd': meanings,
     }
