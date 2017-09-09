@@ -46,7 +46,7 @@ async def query(query, useragent='python-duckduckgo ' + str(__version__),
     async with aiohttp.ClientSession() as cs:
         async with cs.get('http://api.duckduckgo.com/?' + encparams,
                           headers={'User-Agent': useragent}) as r:
-            response_json = await r.json(content_type='application/x-javascript')
+            response_json = await r.json(content_type=None)
 
     if response_json is None:
         print(r)
