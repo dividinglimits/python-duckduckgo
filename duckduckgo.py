@@ -5,31 +5,21 @@
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
-import urllib.error
-import urllib.request
-import urllib.parse 
-import json as j
-import sys
+import urllib.parse
+
+import aiohttp
 
 __version__ = 0.242
 
 
-def query(query, useragent='python-duckduckgo ' + str(__version__),
-          safesearch=True, html=False, meanings=True, **kwargs):
+async def query(query, useragent='python-duckduckgo ' + str(__version__),
+                safesearch=True, html=False, meanings=True, **kwargs):
     """
     Query DuckDuckGo, returning a Results object.
 
-    Here's a query that's unlikely to change:
+    The API is queried asynchronously.
 
-    >>> result = query('1 + 1')
-    >>> result.type
-    'nothing'
-    >>> result.answer.text
-    '1 + 1 = 2'
-    >>> result.answer.type
-    'calc'
-
-    Keword arguments:
+    Keyword arguments:
     useragent: UserAgent to use while querying. Default: "python-duckduckgo %d" (str)
     safesearch: True for on, False for off. Default: True (bool)
     html: True to allow HTML in output. Default: False (bool)
@@ -51,67 +41,65 @@ def query(query, useragent='python-duckduckgo ' + str(__version__),
     params.update(kwargs)
     encparams = urllib.parse.urlencode(params)
     url = 'http://api.duckduckgo.com/?' + encparams
-
-    request = urllib.request.Request(url, headers={'User-Agent': useragent})
-    response = urllib.request.urlopen(request)
-    json = j.loads(response.read().decode("utf-8"))
-    response.close()
-
-    return Results(json)
+    async with aiohttp.ClientSession() as cs:
+        async with cs.get('http://api.duckduckgo.com/?' + encparams,
+                          headers={'User-Agent': useragent}) as r:
+            response_json = await r.json()
+    return Results(response_json)
 
 
 class Results(object):
 
-    def __init__(self, json):
-        json_type = json.get('Type', '')
+    def __init__(self, data):
+        json_type = data.get('Type', '')
         self.type = {'A': 'answer', 'D': 'disambiguation',
                      'C': 'category', 'N': 'name',
                      'E': 'exclusive', '': 'nothing'}.get(json_type, '')
 
-        self.json = json
+        self.json = data
         self.api_version = None  # compat
 
-        self.heading = json.get('Heading', '')
+        self.heading = data.get('Heading', '')
 
-        self.results = [Result(elem) for elem in json.get('Results', [])]
+        self.results = [Result(elem) for elem in data.get('Results', [])]
         self.related = [Result(elem) for elem in
-                        json.get('RelatedTopics', [])]
+                        data.get('RelatedTopics', [])]
 
-        self.abstract = Abstract(json)
-        self.redirect = Redirect(json)
-        self.definition = Definition(json)
-        self.answer = Answer(json)
+        self.abstract = Abstract(data)
+        self.redirect = Redirect(data)
+        self.definition = Definition(data)
+        self.answer = Answer(data)
 
-        self.image = Image({'Result': json.get('Image', '')})
+        self.image = Image({'Result': data.get('Image', '')})
 
 
 class Abstract(object):
 
-    def __init__(self, json):
-        self.html = json.get('Abstract', '')
-        self.text = json.get('AbstractText', '')
-        self.url = json.get('AbstractURL', '')
-        self.source = json.get('AbstractSource')
+    def __init__(self, data):
+        self.html = data.get('Abstract', '')
+        self.text = data.get('AbstractText', '')
+        self.url = data.get('AbstractURL', '')
+        self.source = data.get('AbstractSource')
 
 
 class Redirect(object):
 
-    def __init__(self, json):
-        self.url = json.get('Redirect', '')
+    def __init__(self, data):
+        self.url = data.get('Redirect', '')
 
 
 class Result(object):
 
-    def __init__(self, json):
-        self.topics = json.get('Topics', [])
+    def __init__(self, data):
+        self.topics = data.get('Topics', [])
         if self.topics:
             self.topics = [Result(t) for t in self.topics]
             return
-        self.html = json.get('Result')
-        self.text = json.get('Text')
-        self.url = json.get('FirstURL')
+        self.html = data.get('Result')
+        self.text = data.get('Text')
+        self.url = data.get('FirstURL')
 
-        icon_json = json.get('Icon')
+        icon_json = data.get('Icon')
         if icon_json is not None:
             self.icon = Image(icon_json)
         else:
@@ -120,36 +108,36 @@ class Result(object):
 
 class Image(object):
 
-    def __init__(self, json):
-        self.url = json.get('Result')
-        self.height = json.get('Height', None)
-        self.width = json.get('Width', None)
+    def __init__(self, data):
+        self.url = data.get('Result')
+        self.height = data.get('Height', None)
+        self.width = data.get('Width', None)
 
 
 class Answer(object):
 
-    def __init__(self, json):
-        self.text = json.get('Answer')
-        self.type = json.get('AnswerType', '')
+    def __init__(self, data):
+        self.text = data.get('Answer')
+        self.type = data.get('AnswerType', '')
 
 
 class Definition(object):
-    def __init__(self, json):
-        self.text = json.get('Definition', '')
-        self.url = json.get('DefinitionURL')
-        self.source = json.get('DefinitionSource')
+    def __init__(self, data):
+        self.text = data.get('Definition', '')
+        self.url = data.get('DefinitionURL')
+        self.source = data.get('DefinitionSource')
 
 
-def get_zci(q, web_fallback=True,
-            priority=['answer', 'abstract', 'related.0', 'definition'],
-            urls=True, **kwargs):
+async def get_zci(q, web_fallback=True,
+                  priority=['answer', 'abstract', 'related.0', 'definition'],
+                  urls=True, **kwargs):
     '''A helper method to get a single (and hopefully the best) ZCI result.
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
     if it cannot find anything.'''
 
-    ddg = query('\\' + q, **kwargs)
+    ddg = await query('\\' + q, **kwargs)
     response = ''
 
     for p in priority:

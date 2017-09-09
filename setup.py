@@ -1,7 +1,8 @@
 from setuptools import setup
 from duckduckgo import __version__
 
-long_description = open('README.rst').read()
+with open('README.rst') as f:
+    long_description = f.read()
 
 setup(name='duckduckgo2',
       version=__version__,
@@ -20,5 +21,6 @@ setup(name='duckduckgo2',
                    "Programming Language :: Python",
                    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
                    ],
-      entry_points={'console_scripts':['ddg = duckduckgo:main']},
-      )
+      entry_points={'console_scripts': ['ddg = duckduckgo:main']},
+      install_requires=['aiohttp']
+)
