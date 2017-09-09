@@ -22,5 +22,5 @@ setup(name='duckduckgo2',
                    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
                    ],
       entry_points={'console_scripts': ['ddg = duckduckgo:main']},
-      install_requires=['aiohttp']
+      install_requires=['aiohttp', 'ratelimit']
 )

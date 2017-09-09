@@ -8,10 +8,12 @@
 import urllib.parse
 
 import aiohttp
+from ratelimit import rate_limited
 
 __version__ = 0.242
 
 
+@rate_limited(1)
 async def query(query, useragent='python-duckduckgo ' + str(__version__),
                 safesearch=True, html=False, meanings=True, **kwargs):
     """
