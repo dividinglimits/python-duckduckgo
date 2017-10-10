@@ -1,0 +1,12 @@
+# Binaries
+__pycache__/
+*.py[cod]
+
+# Deployment
+venv/
+
+# Misc
+*~
+*.bak
+.*.swp
+
