@@ -18,8 +18,10 @@ from .models import Results
 try:
     from ratelimit import rate_limited
 except ImportError:
-    def rate_limited(func, freq=None, mult=None):
-        return func
+    def rate_limited(freq=None, mult=None):
+        def decorator(func):
+            return func
+        return decorator
 
 DEFAULT_USER_AGENT = f'python-duckduckgo {__version__}'
 DEFAULT_PRIORITIES = ('answer', 'abstract', 'related.0', 'definition')
