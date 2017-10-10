@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2010 Michael Stephens <me@mikej.st>
 # Copyright (c) 2012-2013 Michael Smith <crazedpsyc@gshellz.org>
+# Copyright (c) 2017 Members of the Programming Server
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
@@ -11,7 +12,6 @@ import aiohttp
 from ratelimit import rate_limited
 
 __version__ = 0.242
-
 
 @rate_limited(1)
 async def query(query, useragent='python-duckduckgo ' + str(__version__),
@@ -155,7 +155,7 @@ async def get_zci(q, web_fallback=True,
         result = getattr(ddg, type)
         if index is not None:
             if not hasattr(result, '__getitem__'):
-                raise TypeError('%s field is not indexable' % type)
+                raise TypeError(f'{type} field is not indexable')
             result = result[index] if len(result) > index else None
         if not result:
             continue
@@ -164,7 +164,7 @@ async def get_zci(q, web_fallback=True,
             response = result.text
         if result.text and hasattr(result, 'url') and urls:
             if result.url:
-                response += ' (%s)' % result.url
+                response += f' ({result.url})'
         if response:
             break
 
