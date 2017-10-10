@@ -1,16 +1,17 @@
 from setuptools import setup
 from duckduckgo import __version__
 
-long_description = open('README.rst').read()
+with open('README.rst') as f:
+    long_description = f.read()
 
-setup(name='duckduckgo2',
+setup(name='duckduckgo-async',
       version=__version__,
       py_modules=['duckduckgo'],
       description='Library for querying the DuckDuckGo API',
-      author='Michael Smith',
-      author_email='crazedpsyc@duckduckgo.com',
+      author='Ammon Smith',
+      author_email='ammon.i.smith@gmail.com',
       license='BSD',
-      url='http://github.com/crazedpsyc/python-duckduckgo/',
+      url='http://github.com/strinking/python-duckduckgo/',
       long_description=long_description,
       platforms=['any'],
       classifiers=["Development Status :: 4 - Beta",
@@ -20,5 +21,6 @@ setup(name='duckduckgo2',
                    "Programming Language :: Python",
                    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
                    ],
-      entry_points={'console_scripts':['ddg = duckduckgo:main']},
-      )
+      entry_points={'console_scripts': ['ddg = duckduckgo:main']},
+      install_requires=['aiohttp', 'ratelimit']
+)
