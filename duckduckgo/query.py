@@ -6,12 +6,12 @@
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
+from typing import Tuple
 import logging
 import urllib.parse
-from typing import Tuple
 
-import aiohttp
 from ratelimit import rate_limited
+import aiohttp
 
 from . import __version__
 from .models import Results
