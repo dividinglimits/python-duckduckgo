@@ -2,15 +2,17 @@
 python-duckduckgo
 ==================
 
-A Python library for querying the DuckDuckGo API.
+A Python 3.6 library for querying the DuckDuckGo API.
 
 Copyright (c) 2010 Michael Stephens <me@mikej.st>
 Copyright (c) 2012-2013 Michael Smith <crazedpsyc@gshellz.org>
+Copyright (c) 2017 Members of the Programming Server
 
 Released under a 3-clause BSD license, see LICENSE for details.
 
-Latest Source: http://github.com/crazedpsyc/python-duckduckgo
-Original source: http://github.com/mikejs/python-duckduckgo (outdated)
+This Source: https://github.com/strinking/python-duckduckgo
+Original Source (1): http://github.com/crazedpsyc/python-duckduckgo
+Original source (2): http://github.com/mikejs/python-duckduckgo
 
 This version has been forked from the original to handle some new features of
 the API, and switch from XML to JSON.
