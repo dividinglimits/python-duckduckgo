@@ -18,7 +18,8 @@ from .models import Results
 try:
     from ratelimit import rate_limited
 except ImportError:
-    rate_limited = lambda x: x
+    def rate_limited(func, freq=None, mult=None):
+        return func
 
 DEFAULT_USER_AGENT = f'python-duckduckgo {__version__}'
 DEFAULT_PRIORITIES = ('answer', 'abstract', 'related.0', 'definition')
