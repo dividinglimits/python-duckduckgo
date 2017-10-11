@@ -1,5 +1,5 @@
 from setuptools import setup
-from duckduckgo import __version__
+from duckduckgo.version import __version__
 
 with open('README.rst') as f:
     long_description = f.read()
