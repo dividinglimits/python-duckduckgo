@@ -13,8 +13,8 @@ import urllib.parse
 from ratelimit import rate_limited
 import aiohttp
 
-from . import __version__
 from .models import Results
+from .version import __version__
 
 DEFAULT_USER_AGENT = f'python-duckduckgo {__version__}'
 DEFAULT_PRIORITIES = ('answer', 'abstract', 'related.0', 'definition')
