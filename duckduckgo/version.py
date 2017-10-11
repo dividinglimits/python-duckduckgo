@@ -6,5 +6,4 @@
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
-from .query import query, get_zci
-from .version import __version__
+__version__ = 0.300
