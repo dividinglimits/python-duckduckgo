@@ -1,11 +1,13 @@
 from setuptools import setup
-from duckduckgo.version import __version__
+
+with open('duckduckgo/VERSION') as f:
+    version = f.read().strip()
 
 with open('README.rst') as f:
     long_description = f.read()
 
 setup(name='duckduckgo-async',
-      version=__version__,
+      version=version,
       py_modules=['duckduckgo'],
       description='Library for querying the DuckDuckGo API',
       author='Ammon Smith',

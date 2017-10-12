@@ -6,4 +6,12 @@
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
-__version__ = 0.300
+import os
+
+__all__ = [
+    '__version__',
+]
+
+path = os.path.join(os.path.dirname(__file__), 'VERSION')
+with open(path) as fh:
+    __version__ = fh.read().strip()
