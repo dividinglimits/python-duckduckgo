@@ -6,13 +6,11 @@
 #
 # See LICENSE for terms of usage, modification and redistribution.
 
+from ._version import __version__
 from .query import query, get_zci
-from .version import __version__
 
 __all__ = [
     'query',
     'get_zci',
     '__version__',
 ]
-
-del version
