@@ -9,6 +9,58 @@
 import asyncio
 import time
 
+class _Scope:
+    __slots__ = (
+        'parent',
+        'id',
+    )
+
+    def __init__(self, parent, id):
+        self.parent = parent
+        self.id = id
+
+    def __enter__(self):
+        duration = self.parent.left_to_wait(self.id)
+        if duration > 0:
+            time.sleep(duration)
+
+    def __exit__(self, *exc):
+        self.parent.update(self.id)
+
+    async def __aenter__(self):
+        duration = self.parent.left_to_wait(self.id)
+        await asyncio.sleep(duration)
+
+    async def __aexit__(self, *exc):
+        self.__exit__(*exc)
+
+class _TryScope:
+    __slots__ = (
+        'parent',
+        'id',
+        'ok',
+    )
+
+    def __init__(self, parent, id):
+        self.parent = parent
+        self.id = id
+        self.ok = None
+
+    def __enter__(self):
+        duration = self.parent.left_to_wait(self.id)
+        self.ok = (duration <= 0)
+        return self.ok
+
+    def __exit__(self, *exc):
+        if self.ok:
+            self.parent.update(self.id)
+
+    async def __aenter__(self):
+        return self.__enter__()
+
+    async def __aexit__(self, *exc):
+        return self.__exit__(*exc)
+
 class Ratelimit:
     __slots__ = (
         'frequency',
@@ -19,41 +71,19 @@ class Ratelimit:
         self.frequency = abs(every) / float(period)
         self.last_called = {}
 
-    def left_to_wait(self, id):
+    def left_to_wait(self, id=None):
         last = self.last_called.get(id, 0.0)
         elapsed = time.monotonic() - last
         return self.frequency - elapsed
 
-    def check(self, id):
+    def check(self, id=None):
         return self.left_to_wait(id) <= 0
 
-    def update(self, id):
+    def update(self, id=None):
         self.last_called[id] = time.monotonic()
 
-    def call(self, id, func, *args, **kwargs):
-        duration = self.left_to_wait(id)
-        if duration > 0:
-            time.sleep(duration)
+    def run(self, id=None):
+        return _Scope(self, id)
 
-        return func(*args, **kwargs)
-
-    async def async_call(self, id, coro, *args, **kwargs):
-        duration = self.left_to_wait(id)
-        if duration > 0:
-            await asyncio.sleep(duration)
-
-        return await coro(*args, **kwargs)
-
-    def try_call(self, id, func, *args, **kwargs):
-        if not self.check(id):
-            return (False, None)
-
-        self.update(id)
-        return (True, func(*args, **kwargs))
-
-    async def try_async_call(self, id, coro, *args, **kwargs):
-        if not self.check(id):
-            return (False, None)
-
-        self.update(id)
-        return (True, await coro(*args, **kwargs))
+    def try_run(self, id=None):
+        return _TryScope(self, id)
