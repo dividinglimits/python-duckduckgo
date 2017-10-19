@@ -71,7 +71,7 @@ async def query(q: str,
     logger.debug("Response is {response}")
     return Results(response)
 
-async def get_zci(q: str,
+async def zci(q: str,
         web_fallback: bool = True,
         priority: Tuple[str] = DEFAULT_PRIORITIES,
         urls: bool = True,

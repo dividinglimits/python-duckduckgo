@@ -7,12 +7,12 @@
 # See LICENSE for terms of usage, modification and redistribution.
 
 from ._version import __version__
-from .query import query, get_zci
+from .query import query, zci
 from .ratelimit import Ratelimit
 
 __all__ = [
     'query',
-    'get_zci',
+    'zci',
     'Ratelimit',
     '__version__',
 ]
