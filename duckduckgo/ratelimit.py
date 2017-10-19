@@ -29,7 +29,8 @@ class _Scope:
 
     async def __aenter__(self):
         duration = self.parent.left_to_wait(self.id)
-        await asyncio.sleep(duration)
+        if duration > 0:
+            await asyncio.sleep(duration)
 
     async def __aexit__(self, *exc):
         self.__exit__(*exc)
