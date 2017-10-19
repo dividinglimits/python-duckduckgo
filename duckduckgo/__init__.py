@@ -8,9 +8,11 @@
 
 from ._version import __version__
 from .query import query, get_zci
+from .ratelimit import Ratelimit
 
 __all__ = [
     'query',
     'get_zci',
+    'Ratelimit',
     '__version__',
 ]

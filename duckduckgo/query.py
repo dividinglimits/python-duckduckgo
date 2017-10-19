@@ -10,7 +10,6 @@ from typing import Tuple
 import logging
 import urllib.parse
 
-from ratelimit import rate_limited
 import aiohttp
 
 from ._version import __version__
@@ -21,7 +20,6 @@ DEFAULT_PRIORITIES = ('answer', 'abstract', 'related.0', 'definition')
 
 logger = logging.getLogger('duckduckgo')
 
-@rate_limited(1)
 async def query(q: str,
                 useragent: str = DEFAULT_USER_AGENT,
                 safesearch: bool = True,
