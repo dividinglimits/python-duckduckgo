@@ -63,24 +63,35 @@ class _TryScope:
 
 class Ratelimit:
     __slots__ = (
-        'frequency',
-        'last_called',
+        'max_count',
+        'duration',
+        'limited',
     )
 
-    def __init__(self, period=1, every=1.0):
-        self.frequency = abs(every) / float(period)
-        self.last_called = {}
+    def __init__(self, count=1, every=1.0):
+        self.max_count = count
+        self.duration = float(every)
+        self.limited = {} # { id : (count, last_time) }
 
     def left_to_wait(self, id=None):
-        last = self.last_called.get(id, 0.0)
-        elapsed = time.monotonic() - last
-        return self.frequency - elapsed
+        count, last_time = self.limited.get(id, (0, 0.0))
+        if count < self.max_count - 1:
+            return 0.0
+
+        elapsed = time.monotonic() - last_time
+        return self.duration - elapsed
 
     def check(self, id=None):
         return self.left_to_wait(id) <= 0
 
     def update(self, id=None):
-        self.last_called[id] = time.monotonic()
+        count, last_time = self.limited.get(id, (0, 0.0))
+        now = time.monotonic()
+        elapsed = now - last_time
+        if elapsed > self.duration:
+            self.limited[id] = (0, now)
+        else:
+            self.limited[id] = (count + 1, last_time)
 
     def run(self, id=None):
         return _Scope(self, id)
