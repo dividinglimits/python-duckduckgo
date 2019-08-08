@@ -65,7 +65,7 @@ async def query(q: str,
         async with cs.get(url, headers={'User-Agent': useragent}) as req:
             response = await req.json(content_type='application/x-javascript')
             if response is None:
-                logger.error("Response is 'None'")
+                logger.error("Invalid response from JSON decoder")
                 raise ValueError("Failed to decode JSON response")
 
     logger.debug("Response is {response}")
