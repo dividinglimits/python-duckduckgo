@@ -20,6 +20,9 @@ DEFAULT_PRIORITIES = ('answer', 'abstract', 'related.0', 'definition')
 
 logger = logging.getLogger('duckduckgo')
 
+class DuckDuckGoError(RuntimeError):
+    pass
+
 async def query(q: str,
                 useragent: str = DEFAULT_USER_AGENT,
                 safesearch: bool = True,
@@ -65,8 +68,7 @@ async def query(q: str,
         async with cs.get(url, headers={'User-Agent': useragent}) as req:
             response = await req.json(content_type='application/x-javascript')
             if response is None:
-                logger.error("Invalid response from JSON decoder")
-                raise ValueError("Failed to decode JSON response")
+                raise DuckDuckGoError("Invalid JSON response")
 
     logger.debug("Response is {response}")
     return Results(response)
