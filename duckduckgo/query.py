@@ -70,7 +70,7 @@ async def query(q: str,
             if response is None:
                 raise DuckDuckGoError("Invalid JSON response")
 
-    logger.debug("Response is {response}")
+    logger.debug(f"Response is {response}")
     return Results(response)
 
 async def zci(q: str,
