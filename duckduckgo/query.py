@@ -135,12 +135,12 @@ async def zci_extra(q: str,
         web_fallback: bool = True,
         priority: Tuple[str] = DEFAULT_PRIORITIES,
         urls: bool = True,
-        **kwargs) -> Tuple[str, bool, str]:
+        **kwargs) -> Tuple[str, str]:
     '''A helper method to get a single (and hopefully the best) ZCI result.
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
-    if it cannot find anything. Returns a tuple with [result, result_found, result_type] which
+    if it cannot find anything. Returns a tuple with [result, result_type] which
     allows to determine how the result was retrieved.'''
 
     logger.info(f"Performing DDG ZCI: '{q}'")
@@ -149,8 +149,7 @@ async def zci_extra(q: str,
 
     ddg = await query(f'\\{q}', **kwargs)
     response = ''
-    found = True
-    result_type = ''
+    result_type = getattr(ddg, 'type', '')
 
     for p in priority:
         ps = p.split('.')
@@ -181,15 +180,12 @@ async def zci_extra(q: str,
     if not response and web_fallback:
         logger.debug("Trying web fallback...")
         if ddg.redirect.url:
-            found = True
-            result_type = ddg.type
             response = ddg.redirect.url
 
     # Final fallback
     if not response:
         logger.info("No results!")
-        found = False
         response = 'Sorry, no results.'
 
     logger.debug(f"Final response: {response!r}")
-    return (response, found, result_type)
+    return (response, result_type)
