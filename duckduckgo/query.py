@@ -64,6 +64,7 @@ async def query(q: str,
     encparams = urllib.parse.urlencode(params)
     url = f'http://api.duckduckgo.com/?{encparams}'
 
+    logger.debug(f"Full request url: {url}")
     async with aiohttp.ClientSession() as cs:
         async with cs.get(url, headers={'User-Agent': useragent}) as req:
             response = await req.json(content_type='application/x-javascript')
@@ -117,14 +118,14 @@ async def zci(q: str,
             break
 
     # If there still isn't anything, try to get the first web result
-    logger.debug("Trying web fallback...")
     if not response and web_fallback:
+        logger.debug("Trying web fallback...")
         if ddg.redirect.url:
             response = ddg.redirect.url
 
     # Final fallback
-    logger.info("No results!")
     if not response:
+        logger.info("No results!")
         response = 'Sorry, no results.'
 
     logger.debug(f"Final response: {response!r}")
@@ -134,12 +135,12 @@ async def zci_extra(q: str,
         web_fallback: bool = True,
         priority: Tuple[str] = DEFAULT_PRIORITIES,
         urls: bool = True,
-        **kwargs) -> Tuple[str, bool, bool]:
+        **kwargs) -> Tuple[str, bool, str]:
     '''A helper method to get a single (and hopefully the best) ZCI result.
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
-    if it cannot find anything. Returns a tuple with [result, result_found, is_fallback] which
+    if it cannot find anything. Returns a tuple with [result, result_found, result_type] which
     allows to determine how the result was retrieved.'''
 
     logger.info(f"Performing DDG ZCI: '{q}'")
@@ -149,7 +150,7 @@ async def zci_extra(q: str,
     ddg = await query(f'\\{q}', **kwargs)
     response = ''
     found = True
-    is_fallback = False
+    result_type = ''
 
     for p in priority:
         ps = p.split('.')
@@ -177,19 +178,18 @@ async def zci_extra(q: str,
             break
 
     # If there still isn't anything, try to get the first web result
-    logger.debug("Trying web fallback...")
     if not response and web_fallback:
+        logger.debug("Trying web fallback...")
         if ddg.redirect.url:
-            is_fallback = True
             found = True
+            result_type = ddg.type
             response = ddg.redirect.url
 
     # Final fallback
-    logger.info("No results!")
     if not response:
+        logger.info("No results!")
         found = False
-        is_fallback = True
         response = 'Sorry, no results.'
 
     logger.debug(f"Final response: {response!r}")
-    return (response, found, is_fallback)
+    return (response, found, result_type)
