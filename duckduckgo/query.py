@@ -84,8 +84,8 @@ async def zci_with_result(q: str,
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
-    if it cannot find anything. Retruns tuple with result string and original DDG
-    Results.'''
+    if it cannot find anything. Returns tuple with result string and original DDG
+    results.'''
 
     logger.info(f"Performing DDG ZCI: '{q}'")
     logger.debug(f"Web fallback: {web_fallback}")
@@ -142,7 +142,7 @@ async def zci(q: str,
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
-    if it cannot find anything. Returns just result string.'''
+    if it cannot find anything. Only returns the result string.'''
 
     (result, ddg) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)[0]
     return result
