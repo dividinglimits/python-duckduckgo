@@ -74,6 +74,65 @@ async def query(q: str,
     logger.debug(f"Response is {response}")
     return Results(response)
 
+
+async def zci_with_result(q: str,
+        web_fallback: bool = True,
+        priority: Tuple[str] = DEFAULT_PRIORITIES,
+        urls: bool = True,
+        **kwargs) -> [str, Results]:
+    '''A helper method to get a single (and hopefully the best) ZCI result.
+    priority=list can be used to set the order in which fields will be checked for answers.
+    Use web_fallback=True to fall back to grabbing the first web result.
+    passed to query. This method will fall back to 'Sorry, no results.'
+    if it cannot find anything. Retruns tuple with result string and original DDG
+    Results.'''
+
+    logger.info(f"Performing DDG ZCI: '{q}'")
+    logger.debug(f"Web fallback: {web_fallback}")
+    logger.debug(f"Use URLs: {urls}")
+
+    ddg = await query(f'\\{q}', **kwargs)
+    response = ''
+
+    for p in priority:
+        ps = p.split('.')
+        type = ps[0]
+        index = int(ps[1]) if len(ps) > 1 else None
+
+        result = getattr(ddg, type)
+        if index is not None:
+            if not hasattr(result, '__getitem__'):
+                logger.error("Result is not indexable!")
+                raise TypeError(f'{type} field is not indexable')
+
+            result = result[index] if len(result) > index else None
+
+        if not result:
+            continue
+        elif result.text:
+            logger.debug(f"Result has text: {result.text}")
+            response = result.text
+
+            if getattr(result, 'url', None) and urls:
+                logger.debug(f"Result has url: {result.url}")
+                response += f' ({result.url})'
+
+            break
+
+    # If there still isn't anything, try to get the first web result
+    if not response and web_fallback:
+        logger.debug("Trying web fallback...")
+        if ddg.redirect.url:
+            response = ddg.redirect.url
+
+    # Final fallback
+    if not response:
+        logger.info("No results!")
+        response = 'Sorry, no results.'
+
+    logger.debug(f"Final response: {response!r}")
+    return [response, ddg]
+
 async def zci(q: str,
         web_fallback: bool = True,
         priority: Tuple[str] = DEFAULT_PRIORITIES,
@@ -83,55 +142,12 @@ async def zci(q: str,
     priority=list can be used to set the order in which fields will be checked for answers.
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
-    if it cannot find anything.'''
+    if it cannot find anything. Returns just result string.'''
 
-    logger.info(f"Performing DDG ZCI: '{q}'")
-    logger.debug(f"Web fallback: {web_fallback}")
-    logger.debug(f"Use URLs: {urls}")
+    (result, ddg) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)[0]
+    return result
 
-    ddg = await query(f'\\{q}', **kwargs)
-    response = ''
-
-    for p in priority:
-        ps = p.split('.')
-        type = ps[0]
-        index = int(ps[1]) if len(ps) > 1 else None
-
-        result = getattr(ddg, type)
-        if index is not None:
-            if not hasattr(result, '__getitem__'):
-                logger.error("Result is not indexable!")
-                raise TypeError(f'{type} field is not indexable')
-
-            result = result[index] if len(result) > index else None
-
-        if not result:
-            continue
-        elif result.text:
-            logger.debug(f"Result has text: {result.text}")
-            response = result.text
-
-            if getattr(result, 'url', None) and urls:
-                logger.debug(f"Result has url: {result.url}")
-                response += f' ({result.url})'
-
-            break
-
-    # If there still isn't anything, try to get the first web result
-    if not response and web_fallback:
-        logger.debug("Trying web fallback...")
-        if ddg.redirect.url:
-            response = ddg.redirect.url
-
-    # Final fallback
-    if not response:
-        logger.info("No results!")
-        response = 'Sorry, no results.'
-
-    logger.debug(f"Final response: {response!r}")
-    return response
-
-async def zci_extra(q: str,
+async def zci_with_type(q: str,
         web_fallback: bool = True,
         priority: Tuple[str] = DEFAULT_PRIORITIES,
         urls: bool = True,
@@ -141,51 +157,7 @@ async def zci_extra(q: str,
     Use web_fallback=True to fall back to grabbing the first web result.
     passed to query. This method will fall back to 'Sorry, no results.'
     if it cannot find anything. Returns a tuple with [result, result_type] which
-    allows to determine how the result was retrieved.'''
+    allows to determine which type of result was returned.'''
 
-    logger.info(f"Performing DDG ZCI: '{q}'")
-    logger.debug(f"Web fallback: {web_fallback}")
-    logger.debug(f"Use URLs: {urls}")
-
-    ddg = await query(f'\\{q}', **kwargs)
-    response = ''
-    result_type = getattr(ddg, 'type', '')
-
-    for p in priority:
-        ps = p.split('.')
-        type = ps[0]
-        index = int(ps[1]) if len(ps) > 1 else None
-
-        result = getattr(ddg, type)
-        if index is not None:
-            if not hasattr(result, '__getitem__'):
-                logger.error("Result is not indexable!")
-                raise TypeError(f'{type} field is not indexable')
-
-            result = result[index] if len(result) > index else None
-
-        if not result:
-            continue
-        elif result.text:
-            logger.debug(f"Result has text: {result.text}")
-            response = result.text
-
-            if getattr(result, 'url', None) and urls:
-                logger.debug(f"Result has url: {result.url}")
-                response += f' ({result.url})'
-
-            break
-
-    # If there still isn't anything, try to get the first web result
-    if not response and web_fallback:
-        logger.debug("Trying web fallback...")
-        if ddg.redirect.url:
-            response = ddg.redirect.url
-
-    # Final fallback
-    if not response:
-        logger.info("No results!")
-        response = 'Sorry, no results.'
-
-    logger.debug(f"Final response: {response!r}")
-    return (response, result_type)
+    (result, ddg) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)
+    return (result, getattr(ddg, 'type', ''))
