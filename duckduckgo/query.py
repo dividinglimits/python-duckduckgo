@@ -42,10 +42,10 @@ async def query(q: str,
     Any other keyword arguments are passed directly to DuckDuckGo as URL params.
     """
 
-    logger.info(f"Performing DDG query: '{q}'")
-    logger.debug(f"Safesearch: {safesearch}")
-    logger.debug(f"HTML: {html}")
-    logger.debug(f"Meanings: {meanings}")
+    logger.info("Performing DDG query: '%s'", query)
+    logger.debug("Safesearch: %s", safesearch)
+    logger.debug("HTML: %s", html)
+    logger.debug("Meanings: %s", meanings)
 
     safesearch = '1' if safesearch else '-1'
     html = '0' if html else '1'
@@ -59,19 +59,19 @@ async def query(q: str,
         'd': meanings,
     }
     params.update(kwargs)
-    logger.debug(f"Full parameters: {params}")
+    logger.debug("Full parameters: %s", params)
 
     encparams = urllib.parse.urlencode(params)
     url = f'http://api.duckduckgo.com/?{encparams}'
 
-    logger.debug(f"Full request url: {url}")
+    logger.debug("Full request url: %s", url)
     async with aiohttp.ClientSession() as cs:
         async with cs.get(url, headers={'User-Agent': useragent}) as req:
             response = await req.json(content_type='application/x-javascript')
             if response is None:
                 raise DuckDuckGoError("Invalid JSON response")
 
-    logger.debug(f"Response is {response}")
+    logger.debug("Response is %s", response)
     return Results(response)
 
 
@@ -87,9 +87,9 @@ async def zci_with_result(q: str,
     if it cannot find anything. Returns tuple with result string and original DDG
     results.'''
 
-    logger.info(f"Performing DDG ZCI: '{q}'")
-    logger.debug(f"Web fallback: {web_fallback}")
-    logger.debug(f"Use URLs: {urls}")
+    logger.info("Performing DDG ZCI: '%s'", q)
+    logger.debug("Web fallback: %s", web_fallback)
+    logger.debug("Use URLs: %s", urls)
 
     ddg = await query(f'\\{q}', **kwargs)
     response = ''
@@ -109,12 +109,13 @@ async def zci_with_result(q: str,
 
         if not result:
             continue
-        elif result.text:
-            logger.debug(f"Result has text: {result.text}")
+
+        if result.text:
+            logger.debug("Result has text: %s", result.text)
             response = result.text
 
             if getattr(result, 'url', None) and urls:
-                logger.debug(f"Result has url: {result.url}")
+                logger.debug("Result has url: %s", result.url)
                 response += f' ({result.url})'
 
             break
@@ -130,7 +131,7 @@ async def zci_with_result(q: str,
         logger.info("No results!")
         response = 'Sorry, no results.'
 
-    logger.debug(f"Final response: {response!r}")
+    logger.debug("Final response: %s", response)
     return [response, ddg]
 
 async def zci(q: str,
@@ -144,7 +145,7 @@ async def zci(q: str,
     passed to query. This method will fall back to 'Sorry, no results.'
     if it cannot find anything. Only returns the result string.'''
 
-    (result, ddg) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)[0]
+    (result, _) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)[0]
     return result
 
 async def zci_with_type(q: str,
