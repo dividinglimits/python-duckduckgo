@@ -7,12 +7,14 @@
 # See LICENSE for terms of usage, modification and redistribution.
 
 from ._version import __version__
-from .query import DuckDuckGoError, query, zci
+from .query import DuckDuckGoError, query, zci_with_result, zci_with_type, zci
 from .ratelimit import Ratelimit
 
 __all__ = [
     'DuckDuckGoError',
     'query',
+    'zci_with_result',
+    'zci_with_type',
     'zci',
     'Ratelimit',
     '__version__',
