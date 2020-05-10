@@ -145,7 +145,7 @@ async def zci(q: str,
     passed to query. This method will fall back to 'Sorry, no results.'
     if it cannot find anything. Only returns the result string.'''
 
-    (result, _) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)[0]
+    (result, _) = await zci_with_result(q, web_fallback, priority, urls, **kwargs)
     return result
 
 async def zci_with_type(q: str,
