@@ -9,10 +9,11 @@
 import asyncio
 import time
 
+
 class _Scope:
     __slots__ = (
-        'parent',
-        'id',
+        "parent",
+        "id",
     )
 
     def __init__(self, parent, id):
@@ -35,11 +36,12 @@ class _Scope:
     async def __aexit__(self, *exc):
         self.__exit__(*exc)
 
+
 class _TryScope:
     __slots__ = (
-        'parent',
-        'id',
-        'ok',
+        "parent",
+        "id",
+        "ok",
     )
 
     def __init__(self, parent, id):
@@ -49,7 +51,7 @@ class _TryScope:
 
     def __enter__(self):
         duration = self.parent.left_to_wait(self.id)
-        self.ok = (duration <= 0)
+        self.ok = duration <= 0
         return self.ok
 
     def __exit__(self, *exc):
@@ -62,17 +64,18 @@ class _TryScope:
     async def __aexit__(self, *exc):
         return self.__exit__(*exc)
 
+
 class Ratelimit:
     __slots__ = (
-        'max_count',
-        'duration',
-        'limited',
+        "max_count",
+        "duration",
+        "limited",
     )
 
     def __init__(self, count=1, every=1.0):
         self.max_count = count
         self.duration = float(every)
-        self.limited = {} # { id : (count, last_time) }
+        self.limited = {}  # { id : (count, last_time) }
 
     def left_to_wait(self, id=None):
         count, last_time = self.limited.get(id, (0, 0.0))

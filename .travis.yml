@@ -18,7 +18,7 @@ jobs:
     - stage: black
       python: '3.8'
       script:
-        - black --check duckduckgo || true
+        - black --check duckduckgo
   allow_failures:
     - python: 'nightly'
   fast_finish: true

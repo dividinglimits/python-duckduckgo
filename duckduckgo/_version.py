@@ -9,9 +9,9 @@
 import os
 
 __all__ = [
-    '__version__',
+    "__version__",
 ]
 
-path = os.path.join(os.path.dirname(__file__), 'VERSION')
+path = os.path.join(os.path.dirname(__file__), "VERSION")
 with open(path) as fh:
     __version__ = fh.read().strip()

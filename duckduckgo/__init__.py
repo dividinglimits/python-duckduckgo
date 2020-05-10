@@ -11,11 +11,11 @@ from .query import DuckDuckGoError, query, zci_with_result, zci_with_type, zci
 from .ratelimit import Ratelimit
 
 __all__ = [
-    'DuckDuckGoError',
-    'query',
-    'zci_with_result',
-    'zci_with_type',
-    'zci',
-    'Ratelimit',
-    '__version__',
+    "DuckDuckGoError",
+    "query",
+    "zci_with_result",
+    "zci_with_type",
+    "zci",
+    "Ratelimit",
+    "__version__",
 ]
