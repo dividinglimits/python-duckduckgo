@@ -1,20 +1,37 @@
 language: python
-dist: trusty
+dist: xenial
+os: linux
+
+stages:
+  - black
+  - test
 
 python:
   - '3.6'
+  - '3.7'
+  - '3.8'
+  - '3.8-dev'
   - 'nightly'
 
-sudo: false
+jobs:
+  include:
+    - stage: black
+      python: '3.8'
+      script:
+        - black --check duckduckgo || true
+  allow_failures:
+    - python: 'nightly'
+  fast_finish: true
 
 cache: pip
 
 install:
-  - pip install --requirement requirements.txt
-  - pip install pylint
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
 
 script:
-  - pylint duckduckgo
+  # Display all lints and a report
+  - pylint --reports=yes duckduckgo
 
 notifications:
   email:
